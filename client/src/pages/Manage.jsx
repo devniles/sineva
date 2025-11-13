@@ -32,6 +32,8 @@ export default function Manage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
 
+  const [selected, setSelected] = useState([]); // ❤️ NEW
+
   useEffect(() => {
     fetchPersonas();
   }, []);
@@ -86,6 +88,70 @@ export default function Manage() {
     setShowDelete(false);
     setMessage("🗑️ Persona deleted successfully!");
     setTimeout(() => setMessage(""), 2500);
+  };
+
+  // 📤 CSV EXPORT
+  const exportCSV = () => {
+    const rows = selected.length
+      ? personas.filter((p) => selected.includes(p._id))
+      : filteredData;
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        ["Product", "Category", "Summary", "Tone"],
+        ...rows.map((p) => [
+          p.productName,
+          p.category,
+          p.summary,
+          p.toneRecommendation,
+        ]),
+      ]
+        .map((e) => e.join(","))
+        .join("\n");
+
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = "personas.csv";
+    link.click();
+  };
+
+  // 📤 Excel EXPORT
+  const exportExcel = () => {
+    const rows = selected.length
+      ? personas.filter((p) => selected.includes(p._id))
+      : filteredData;
+
+    let table = `
+      <table>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Summary</th>
+          <th>Tone</th>
+        </tr>
+        ${rows
+          .map(
+            (p) => `
+          <tr>
+            <td>${p.productName}</td>
+            <td>${p.category}</td>
+            <td>${p.summary}</td>
+            <td>${p.toneRecommendation}</td>
+          </tr>`
+          )
+          .join("")}
+      </table>
+    `;
+
+    const blob = new Blob([table], {
+      type: "application/vnd.ms-excel",
+    });
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "personas.xls";
+    a.click();
   };
 
   if (loading) {
@@ -147,33 +213,75 @@ export default function Manage() {
         </Col>
       </Row>
 
+      {/* Export Buttons */}
+      <div className="d-flex gap-2 ms-2 mb-2">
+        <Button variant="success" size="sm" onClick={exportCSV}>
+          <i className="bi bi-filetype-csv me-1"></i> Export CSV
+        </Button>
+
+        <Button variant="primary" size="sm" onClick={exportExcel}>
+          <i className="bi bi-file-earmark-excel me-1"></i> Export Excel
+        </Button>
+      </div>
+
       {message && (
         <Alert variant="success" className="ms-2">
           {message}
         </Alert>
       )}
 
-      {/* 📱 FULL RESPONSIVE TABLE */}
+      {/* 📱 Responsive Table */}
       <div className="table-responsive px-2" style={{ overflowX: "auto" }}>
         <Table bordered hover className="bg-white shadow-sm align-middle">
           <thead className="table-primary">
             <tr>
+              <th>
+                <Form.Check
+                  type="checkbox"
+                  checked={currentData.every((p) => selected.includes(p._id))}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelected(currentData.map((p) => p._id));
+                    } else {
+                      setSelected([]);
+                    }
+                  }}
+                />
+              </th>
               <th>#</th>
               <th>Product</th>
               <th>Category</th>
               <th>Summary</th>
               <th>Tone</th>
-              <th width="180px" className="text-center">Actions</th>
+              <th width="180px" className="text-center">
+                Actions
+              </th>
             </tr>
           </thead>
 
           <tbody>
             {currentData.map((p, index) => (
               <tr key={p._id}>
+                {/* Checkbox */}
+                <td>
+                  <Form.Check
+                    type="checkbox"
+                    checked={selected.includes(p._id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelected([...selected, p._id]);
+                      } else {
+                        setSelected(selected.filter((id) => id !== p._id));
+                      }
+                    }}
+                  />
+                </td>
+
                 <td>{startIdx + index + 1}</td>
                 <td>{p.productName}</td>
                 <td>{p.category}</td>
 
+                {/* Responsive Summary */}
                 <td
                   style={{
                     maxWidth: "250px",
@@ -188,9 +296,7 @@ export default function Manage() {
                     {p.summary}
                   </div>
 
-                  <div className="d-block d-md-none">
-                    {p.summary}
-                  </div>
+                  <div className="d-block d-md-none">{p.summary}</div>
                 </td>
 
                 <td>{p.toneRecommendation}</td>
@@ -222,7 +328,7 @@ export default function Manage() {
 
             {currentData.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center text-muted py-4">
+                <td colSpan="7" className="text-center text-muted py-4">
                   No personas found.
                 </td>
               </tr>
@@ -231,6 +337,7 @@ export default function Manage() {
         </Table>
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="d-flex justify-content-center mt-3">
           <Pagination>
@@ -317,6 +424,7 @@ export default function Manage() {
         </Modal.Footer>
       </Modal>
 
+      {/* Delete Modal */}
       <Modal show={showDelete} onHide={() => setShowDelete(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>
