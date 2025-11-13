@@ -1,12 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Card, Form, Row, Col, Button, Spinner, Alert } from "react-bootstrap";
+import {
+  Card,
+  Form,
+  Row,
+  Col,
+  Button,
+  Spinner,
+  Alert,
+  Container,
+} from "react-bootstrap";
 import { Typeahead } from "react-bootstrap-typeahead";
 import PersonaCard from "../components/PersonaCard";
 import { usePersonaStore } from "../store";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 
-// 👇 Environment-based API URL
 const API_BASE = import.meta.env.VITE_API_URL;
 
 export default function Home() {
@@ -88,20 +96,20 @@ export default function Home() {
   };
 
   return (
-    <div className="container py-3">
+    <Container fluid className="py-3 px-3 px-md-5">
       <Card className="shadow-sm p-4 mb-4 border-0">
-        <h4 className="mb-4 fw-bold">
+        <h4 className="mb-4 fw-bold text-center text-md-start">
           <i className="bi bi-stars text-primary me-2"></i>
           Generate Audience Personas
         </h4>
 
         <Form onSubmit={handleSubmit}>
-          <Row>
-            <Col md={6}>
+          <Row xs={1} md={2}>
+            <Col>
               <Form.Group className="mb-3">
                 <Form.Label>
                   <i className="bi bi-bag me-2 text-secondary"></i>
-                  Product Brand Name
+                  Product / Brand Name
                 </Form.Label>
                 <Form.Control
                   name="productName"
@@ -113,7 +121,7 @@ export default function Home() {
               </Form.Group>
             </Col>
 
-            <Col md={6}>
+            <Col>
               <Form.Group className="mb-3">
                 <Form.Label>
                   <i className="bi bi-tags me-2 text-secondary"></i>
@@ -124,7 +132,7 @@ export default function Home() {
                   onChange={handleCategoryChange}
                   options={categories}
                   selected={form.category ? [form.category] : []}
-                  placeholder="Start typing to search categories..."
+                  placeholder="Search or select a category..."
                   highlightOnlyResult
                 />
               </Form.Group>
@@ -138,7 +146,7 @@ export default function Home() {
             </Form.Label>
             <Form.Control
               name="targetMarket"
-              placeholder="e.g., Working professionals, students, athletes..."
+              placeholder="e.g., Students, professionals, parents..."
               value={form.targetMarket}
               onChange={handleChange}
               required
@@ -172,11 +180,11 @@ export default function Home() {
             />
           </Form.Group>
 
-          <div className="text-start">
+          <div className="text-center text-md-start">
             <Button
               type="submit"
               variant="primary"
-              className="px-4"
+              className="px-4 py-2 w-100 w-md-auto"
               disabled={loading}
             >
               {loading ? (
@@ -195,7 +203,7 @@ export default function Home() {
       {message && (
         <Alert
           variant={message.startsWith("✅") ? "success" : "danger"}
-          className="mt-3"
+          className="mt-3 text-center text-md-start"
         >
           {message}
         </Alert>
@@ -203,14 +211,16 @@ export default function Home() {
 
       {result && (
         <Card className="p-4 shadow-sm border-0 mt-4">
-          <div className="d-flex align-items-center mb-3">
+          <div className="d-flex flex-column flex-md-row align-items-center mb-3">
             <i className="bi bi-person-bounding-box text-primary fs-4 me-2"></i>
-            <h5 className="mb-0">Generated Personas</h5>
+            <h5 className="mb-0 text-center text-md-start">
+              Generated Personas
+            </h5>
           </div>
 
-          <Row>
+          <Row xs={1} md={2} className="g-3">
             {result.personas?.map((p, i) => (
-              <Col md={6} key={i}>
+              <Col key={i}>
                 <PersonaCard persona={p} />
               </Col>
             ))}
@@ -234,13 +244,17 @@ export default function Home() {
             {result.toneRecommendation}
           </p>
 
-          <div className="mt-3 text-start">
-            <Button variant="success" onClick={handleSave} className="px-4">
+          <div className="mt-3 text-center text-md-start">
+            <Button
+              variant="success"
+              onClick={handleSave}
+              className="px-4 py-2 w-100 w-md-auto"
+            >
               <i className="bi bi-save2 me-2"></i>Save to Database
             </Button>
           </div>
         </Card>
       )}
-    </div>
+    </Container>
   );
 }

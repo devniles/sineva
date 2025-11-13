@@ -29,3 +29,13 @@ body {
 .list-group-item {
   transition: background 0.12s;
 }
+body {
+  background-color: #f8f9fa;
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+.card {
+  border-radius: 12px !important;
+}
