@@ -101,7 +101,7 @@ export default function Home() {
               <Form.Group className="mb-3">
                 <Form.Label>
                   <i className="bi bi-bag me-2 text-secondary"></i>
-                  Product / Brand Name
+                  Product Brand Name
                 </Form.Label>
                 <Form.Control
                   name="productName"
