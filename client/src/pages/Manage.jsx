@@ -36,7 +36,7 @@ export default function Manage() {
     fetchPersonas();
   }, []);
 
-  // ✅ Search Filter Logic
+  // 🔍 Search Filter
   const filteredData = useMemo(() => {
     const query = search.toLowerCase();
     if (!query) return personas;
@@ -62,12 +62,12 @@ export default function Manage() {
     });
   }, [personas, search, searchField]);
 
-  // ✅ Pagination Logic
+  // 📄 Pagination
   const totalPages = Math.ceil(filteredData.length / perPage);
   const startIdx = (currentPage - 1) * perPage;
   const currentData = filteredData.slice(startIdx, startIdx + perPage);
 
-  // ✅ Edit
+  // ✏ Edit
   const handleEdit = (p) => {
     setEditData({ ...p });
     setShowEdit(true);
@@ -80,7 +80,7 @@ export default function Manage() {
     setTimeout(() => setMessage(""), 2500);
   };
 
-  // ✅ Delete
+  // 🗑 Delete
   const handleDeleteConfirm = async () => {
     await deletePersona(selectedId);
     setShowDelete(false);
@@ -103,18 +103,21 @@ export default function Manage() {
           <h4 className="fw-bold mb-0 ps-2">📋 Manage Personas</h4>
         </Col>
 
-        {/* ✅ Search + Field Dropdown */}
+        {/* Search Input */}
         <Col xs="12" md="6">
           <InputGroup className="ms-2">
             <Form.Control
               type="text"
-              placeholder={`🔍 Search in ${searchField === "all" ? "all fields" : searchField}...`}
+              placeholder={`🔍 Search in ${
+                searchField === "all" ? "all fields" : searchField
+              }...`}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
             />
+
             <Form.Select
               value={searchField}
               onChange={(e) => setSearchField(e.target.value)}
@@ -129,7 +132,7 @@ export default function Manage() {
           </InputGroup>
         </Col>
 
-        {/* ✅ Per Page Dropdown */}
+        {/* Per Page */}
         <Col xs="auto" md="2">
           <Form.Select
             size="sm"
@@ -150,8 +153,9 @@ export default function Manage() {
         </Alert>
       )}
 
-      <div className="px-2">
-        <Table bordered hover responsive className="bg-white shadow-sm align-middle">
+      {/* 📱 FULL RESPONSIVE TABLE */}
+      <div className="table-responsive px-2" style={{ overflowX: "auto" }}>
+        <Table bordered hover className="bg-white shadow-sm align-middle">
           <thead className="table-primary">
             <tr>
               <th>#</th>
@@ -159,23 +163,41 @@ export default function Manage() {
               <th>Category</th>
               <th>Summary</th>
               <th>Tone</th>
-              <th width="180px" className="text-center">
-                Actions
-              </th>
+              <th width="180px" className="text-center">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {currentData.map((p, index) => (
               <tr key={p._id}>
                 <td>{startIdx + index + 1}</td>
                 <td>{p.productName}</td>
                 <td>{p.category}</td>
-                <td style={{ maxWidth: "250px" }}>
-                  <div className="text-truncate" title={p.summary}>
+
+                {/* Responsive Summary */}
+                <td
+                  style={{
+                    maxWidth: "250px",
+                    whiteSpace: "normal",
+                    wordWrap: "break-word",
+                  }}
+                >
+                  {/* Desktop truncate */}
+                  <div
+                    className="text-truncate d-none d-md-block"
+                    title={p.summary}
+                  >
+                    {p.summary}
+                  </div>
+
+                  {/* Mobile full wrap */}
+                  <div className="d-block d-md-none">
                     {p.summary}
                   </div>
                 </td>
+
                 <td>{p.toneRecommendation}</td>
+
                 <td className="text-center">
                   <div className="d-flex justify-content-center gap-2 flex-wrap">
                     <Button
@@ -185,6 +207,7 @@ export default function Manage() {
                     >
                       <i className="bi bi-pencil-square me-1"></i> Edit
                     </Button>
+
                     <Button
                       variant="outline-danger"
                       size="sm"
@@ -211,7 +234,7 @@ export default function Manage() {
         </Table>
       </div>
 
-      {/* ✅ Pagination */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="d-flex justify-content-center mt-3">
           <Pagination>
@@ -228,7 +251,7 @@ export default function Manage() {
         </div>
       )}
 
-      {/* ✅ Edit Modal */}
+      {/* Edit Modal */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
@@ -298,7 +321,7 @@ export default function Manage() {
         </Modal.Footer>
       </Modal>
 
-      {/* ✅ Delete Modal */}
+      {/* Delete Modal */}
       <Modal show={showDelete} onHide={() => setShowDelete(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -307,7 +330,7 @@ export default function Manage() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete this persona?  
+          Are you sure you want to delete this persona?
           This action cannot be undone.
         </Modal.Body>
         <Modal.Footer>
