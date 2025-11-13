@@ -13,7 +13,6 @@ export default function Sidebar() {
 
   return (
     <>
-     
       <div className="d-md-none d-flex p-2 bg-primary text-white align-items-center">
         <Button
           variant="light"
@@ -31,24 +30,36 @@ export default function Sidebar() {
         style={{
           position: "fixed",
           top: 0,
-          left: open ? 0 : "-100%",
+          left: open ? 0 : "-100%", // Mobile logic
           height: "100vh",
-          width: "80%",          // Mobile width
-          maxWidth: "250px",     // Desktop width
+          width: "80%", // mobile
+          maxWidth: "250px", // desktop
           background: "#fff",
           zIndex: 9999,
           transition: "left 0.3s ease",
           borderRight: "1px solid #ddd",
         }}
       >
-        {/* Close button for Mobile */}
+        <style>
+          {`
+            @media (min-width: 768px) {
+              .sidebar-container {
+                left: 0 !important;        /* Desktop: always visible */
+                width: 250px !important;   /* Desktop width fixed */
+                position: relative !important;
+                z-index: 1 !important;
+                height: 100%;
+              }
+            }
+          `}
+        </style>
+
         <div className="d-md-none d-flex justify-content-end p-2">
           <Button variant="outline-danger" size="sm" onClick={() => setOpen(false)}>
             <i className="bi bi-x-lg"></i>
           </Button>
         </div>
 
-        {/* Brand Section */}
         <div className="p-3 text-center border-bottom bg-gradient bg-primary text-white">
           <div className="d-flex align-items-center justify-content-center gap-2">
             <i className="bi bi-stars fs-3 text-light"></i>
@@ -57,14 +68,13 @@ export default function Sidebar() {
           <small className="text-light-50 fw-lighter">Persona Generator</small>
         </div>
 
-        {/* Menu */}
         <ListGroup variant="flush" className="mt-3">
           {links.map((link) => (
             <ListGroup.Item
               key={link.path}
               as={Link}
               to={link.path}
-              onClick={() => setOpen(false)}  
+              onClick={() => setOpen(false)} // mobile close
               className={`d-flex align-items-center gap-3 py-3 px-3 border-0 ${
                 pathname === link.path
                   ? "bg-primary text-white fw-bold shadow-sm"
@@ -83,17 +93,16 @@ export default function Sidebar() {
           ))}
         </ListGroup>
 
-        {/* Footer */}
         <div className="mt-auto text-center small text-secondary p-3 border-top">
           <i className="bi bi-c-circle me-1"></i>
           {new Date().getFullYear()} Sineva AI
         </div>
       </div>
 
-      {/* ======== DARK OVERLAY (when sidebar open) ======== */}
       {open && (
         <div
           onClick={() => setOpen(false)}
+          className="d-md-none"
           style={{
             position: "fixed",
             top: 0,
@@ -103,7 +112,6 @@ export default function Sidebar() {
             height: "100vh",
             zIndex: 999,
           }}
-          className="d-md-none"
         ></div>
       )}
     </>
