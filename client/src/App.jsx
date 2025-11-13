@@ -14,19 +14,30 @@ export default function App() {
     <BrowserRouter>
       <Container fluid className="p-0" style={{ minHeight: "100vh" }}>
         <Row className="g-0">
-          <Col xs={3} md={2} className="p-0">
+
+          {/* Mobile → Full Width
+              Desktop → Left Sidebar
+          */}
+          <Col xs={12} md={2} className="p-0">
             <Sidebar />
           </Col>
 
-          <Col xs={9} md={10} className="p-0">
+          <Col xs={12} md={10} className="p-0">
             <Topbar />
-            <div style={{ padding: 20, background: "#f4f6f8", minHeight: "calc(100vh - 56px)" }}>
+            <div
+              style={{
+                padding: 20,
+                background: "#f4f6f8",
+                minHeight: "calc(100vh - 56px)",
+              }}
+            >
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/manage" element={<Manage />} />
               </Routes>
             </div>
           </Col>
+
         </Row>
       </Container>
     </BrowserRouter>

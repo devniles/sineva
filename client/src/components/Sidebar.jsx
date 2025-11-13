@@ -13,21 +13,21 @@ export default function Sidebar() {
   return (
     <div
       className="d-flex flex-column align-items-stretch h-100 bg-white border-end shadow-sm"
-      style={{ width: "250px" }}
+      style={{
+        width: "100%",       // Mobile full width
+        maxWidth: "250px",   // Desktop fixed width
+      }}
     >
-      {/* ✅ Brand Section */}
+      {/* Brand Section */}
       <div className="p-3 text-center border-bottom bg-gradient bg-primary text-white">
         <div className="d-flex align-items-center justify-content-center gap-2">
-          <i
-            className="bi bi-stars fs-3 text-light"
-            style={{ filter: "drop-shadow(0 0 1px #000)" }}
-          ></i>
+          <i className="bi bi-stars fs-3 text-light"></i>
           <h5 className="mb-0 fw-bold text-light">Sineva AI</h5>
         </div>
         <small className="text-light-50 fw-lighter">Persona Generator</small>
       </div>
 
-      {/* ✅ Menu Links */}
+      {/* Menu */}
       <ListGroup variant="flush" className="mt-3">
         {links.map((link) => (
           <ListGroup.Item
@@ -55,7 +55,7 @@ export default function Sidebar() {
         ))}
       </ListGroup>
 
-      {/* ✅ Footer */}
+      {/* Footer */}
       <div className="mt-auto text-center small text-secondary p-3 border-top">
         <i className="bi bi-c-circle me-1"></i>
         {new Date().getFullYear()} Sineva AI
