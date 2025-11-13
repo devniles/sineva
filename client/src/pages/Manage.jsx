@@ -31,8 +31,7 @@ export default function Manage() {
   const [searchField, setSearchField] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
-
-  const [selected, setSelected] = useState([]); // ❤️ NEW
+  const [selected, setSelected] = useState([]); // checkbox selected
 
   useEffect(() => {
     fetchPersonas();
@@ -40,11 +39,11 @@ export default function Manage() {
 
   // 🔍 Search Filter
   const filteredData = useMemo(() => {
-    const query = search.toLowerCase();
-    if (!query) return personas;
+    const q = search.toLowerCase();
+    if (!q) return personas;
 
     return personas.filter((p) => {
-      const fields = {
+      const f = {
         product: p.productName?.toLowerCase(),
         category: p.category?.toLowerCase(),
         summary: p.summary?.toLowerCase(),
@@ -53,14 +52,13 @@ export default function Manage() {
 
       if (searchField === "all") {
         return (
-          fields.product?.includes(query) ||
-          fields.category?.includes(query) ||
-          fields.summary?.includes(query) ||
-          fields.tone?.includes(query)
+          f.product?.includes(q) ||
+          f.category?.includes(q) ||
+          f.summary?.includes(q) ||
+          f.tone?.includes(q)
         );
-      } else {
-        return fields[searchField]?.includes(query);
       }
+      return f[searchField]?.includes(q);
     });
   }, [personas, search, searchField]);
 
@@ -86,17 +84,17 @@ export default function Manage() {
   const handleDeleteConfirm = async () => {
     await deletePersona(selectedId);
     setShowDelete(false);
-    setMessage("🗑️ Persona deleted successfully!");
+    setMessage("🗑 Deleted successfully!");
     setTimeout(() => setMessage(""), 2500);
   };
 
-  // 📤 CSV EXPORT
+  // 📤 CSV
   const exportCSV = () => {
     const rows = selected.length
       ? personas.filter((p) => selected.includes(p._id))
       : filteredData;
 
-    const csvContent =
+    const csv =
       "data:text/csv;charset=utf-8," +
       [
         ["Product", "Category", "Summary", "Tone"],
@@ -107,74 +105,93 @@ export default function Manage() {
           p.toneRecommendation,
         ]),
       ]
-        .map((e) => e.join(","))
+        .map((r) => r.join(","))
         .join("\n");
 
-    const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
-    link.download = "personas.csv";
-    link.click();
+    const a = document.createElement("a");
+    a.href = encodeURI(csv);
+    a.download = "personas.csv";
+    a.click();
   };
 
-  // 📤 Excel EXPORT
+  // 📤 Excel
   const exportExcel = () => {
     const rows = selected.length
       ? personas.filter((p) => selected.includes(p._id))
       : filteredData;
 
-    let table = `
+    let html = `
       <table>
-        <tr>
-          <th>Product</th>
-          <th>Category</th>
-          <th>Summary</th>
-          <th>Tone</th>
-        </tr>
-        ${rows
-          .map(
-            (p) => `
-          <tr>
-            <td>${p.productName}</td>
-            <td>${p.category}</td>
-            <td>${p.summary}</td>
-            <td>${p.toneRecommendation}</td>
-          </tr>`
-          )
-          .join("")}
-      </table>
-    `;
+      <tr><th>Product</th><th>Category</th><th>Summary</th><th>Tone</th></tr>
+      `;
 
-    const blob = new Blob([table], {
-      type: "application/vnd.ms-excel",
+    rows.forEach((p) => {
+      html += `
+        <tr>
+          <td>${p.productName}</td>
+          <td>${p.category}</td>
+          <td>${p.summary}</td>
+          <td>${p.toneRecommendation}</td>
+        </tr>`;
     });
 
+    html += "</table>";
+
+    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "personas.xls";
     a.click();
   };
 
-  if (loading) {
+  // ⭐ ⭐ EXPORT FOR META ADS
+  const exportMetaAds = () => {
+    const rows = selected.length
+      ? personas.filter((p) => selected.includes(p._id))
+      : filteredData;
+
+    const metaRows = rows.map((p) => {
+      const persona = p.personas?.[0] || {};
+
+      return {
+        gender: persona.gender || "",
+        age_range: persona.age || "",
+        city: persona.location || "",
+        interests: persona.interests?.join(";") || "",
+      };
+    });
+
+    let csv = "gender,age_range,city,interests\n";
+    metaRows.forEach((r) => {
+      csv += `${r.gender},${r.age_range},${r.city},${r.interests}\n`;
+    });
+
+    const a = document.createElement("a");
+    a.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
+    a.download = "meta_ads_audience.csv";
+    a.click();
+  };
+
+  // Loader
+  if (loading)
     return (
       <div className="text-center py-5">
         <Spinner animation="border" />
       </div>
     );
-  }
 
   return (
     <div className="container-fluid py-3">
+      {/* Top Controls */}
       <Row className="align-items-center mb-3 g-3">
         <Col xs="12" md="3">
-          <h4 className="fw-bold mb-0 ps-2">📋 Manage Personas</h4>
+          <h4 className="fw-bold ps-2">📋 Manage Personas</h4>
         </Col>
 
-        {/* Search Input */}
         <Col xs="12" md="6">
           <InputGroup className="ms-2">
             <Form.Control
-              type="text"
-              placeholder={`🔍 Search in ${
+              placeholder={`Search in ${
                 searchField === "all" ? "all fields" : searchField
               }...`}
               value={search}
@@ -189,7 +206,7 @@ export default function Manage() {
               onChange={(e) => setSearchField(e.target.value)}
               style={{ maxWidth: "180px" }}
             >
-              <option value="all">All Fields</option>
+              <option value="all">All</option>
               <option value="product">Product</option>
               <option value="category">Category</option>
               <option value="summary">Summary</option>
@@ -198,13 +215,12 @@ export default function Manage() {
           </InputGroup>
         </Col>
 
-        {/* Per Page */}
         <Col xs="auto" md="2">
           <Form.Select
             size="sm"
             value={perPage}
             onChange={(e) => setPerPage(Number(e.target.value))}
-            style={{ width: "130px", marginLeft: "10px" }}
+            style={{ width: "130px" }}
           >
             <option value="5">5 per page</option>
             <option value="10">10 per page</option>
@@ -214,13 +230,15 @@ export default function Manage() {
       </Row>
 
       {/* Export Buttons */}
-      <div className="d-flex gap-2 ms-2 mb-2">
-        <Button variant="success" size="sm" onClick={exportCSV}>
-          <i className="bi bi-filetype-csv me-1"></i> Export CSV
+      <div className="d-flex gap-2 ms-2 mb-3 flex-wrap">
+        <Button size="sm" variant="success" onClick={exportCSV}>
+          CSV Export
         </Button>
-
-        <Button variant="primary" size="sm" onClick={exportExcel}>
-          <i className="bi bi-file-earmark-excel me-1"></i> Export Excel
+        <Button size="sm" variant="primary" onClick={exportExcel}>
+          Excel Export
+        </Button>
+        <Button size="sm" variant="warning" onClick={exportMetaAds}>
+          Meta Ads Export
         </Button>
       </div>
 
@@ -230,21 +248,21 @@ export default function Manage() {
         </Alert>
       )}
 
-      {/* 📱 Responsive Table */}
-      <div className="table-responsive px-2" style={{ overflowX: "auto" }}>
+      {/* Responsive Table */}
+      <div className="table-responsive px-2">
         <Table bordered hover className="bg-white shadow-sm align-middle">
           <thead className="table-primary">
             <tr>
               <th>
                 <Form.Check
                   type="checkbox"
-                  checked={currentData.every((p) => selected.includes(p._id))}
+                  checked={currentData.every((p) =>
+                    selected.includes(p._id)
+                  )}
                   onChange={(e) => {
-                    if (e.target.checked) {
+                    if (e.target.checked)
                       setSelected(currentData.map((p) => p._id));
-                    } else {
-                      setSelected([]);
-                    }
+                    else setSelected([]);
                   }}
                 />
               </th>
@@ -260,75 +278,63 @@ export default function Manage() {
           </thead>
 
           <tbody>
-            {currentData.map((p, index) => (
+            {currentData.map((p, i) => (
               <tr key={p._id}>
-                {/* Checkbox */}
                 <td>
                   <Form.Check
                     type="checkbox"
                     checked={selected.includes(p._id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelected([...selected, p._id]);
-                      } else {
-                        setSelected(selected.filter((id) => id !== p._id));
-                      }
-                    }}
+                    onChange={(e) =>
+                      e.target.checked
+                        ? setSelected([...selected, p._id])
+                        : setSelected(
+                            selected.filter((id) => id !== p._id)
+                          )
+                    }
                   />
                 </td>
 
-                <td>{startIdx + index + 1}</td>
+                <td>{startIdx + i + 1}</td>
                 <td>{p.productName}</td>
                 <td>{p.category}</td>
 
-                {/* Responsive Summary */}
-                <td
-                  style={{
-                    maxWidth: "250px",
-                    whiteSpace: "normal",
-                    wordWrap: "break-word",
-                  }}
-                >
-                  <div
-                    className="text-truncate d-none d-md-block"
-                    title={p.summary}
-                  >
+                <td style={{ maxWidth: "250px", wordBreak: "break-word" }}>
+                  <div className="d-none d-md-block text-truncate">
                     {p.summary}
                   </div>
-
                   <div className="d-block d-md-none">{p.summary}</div>
                 </td>
 
                 <td>{p.toneRecommendation}</td>
 
                 <td className="text-center">
-                  <div className="d-flex justify-content-center gap-2 flex-wrap">
+                  <div className="d-flex gap-2 justify-content-center flex-wrap">
                     <Button
-                      variant="outline-primary"
                       size="sm"
+                      variant="outline-primary"
                       onClick={() => handleEdit(p)}
                     >
-                      <i className="bi bi-pencil-square me-1"></i> Edit
+                      Edit
                     </Button>
 
                     <Button
-                      variant="outline-danger"
                       size="sm"
+                      variant="outline-danger"
                       onClick={() => {
                         setSelectedId(p._id);
                         setShowDelete(true);
                       }}
                     >
-                      <i className="bi bi-trash3 me-1"></i> Delete
+                      Delete
                     </Button>
                   </div>
                 </td>
               </tr>
             ))}
 
-            {currentData.length === 0 && (
+            {!currentData.length && (
               <tr>
-                <td colSpan="7" className="text-center text-muted py-4">
+                <td colSpan="7" className="text-center py-4 text-muted">
                   No personas found.
                 </td>
               </tr>
@@ -357,9 +363,7 @@ export default function Manage() {
       {/* Edit Modal */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-pencil-square me-2 text-primary"></i> Edit Persona
-          </Modal.Title>
+          <Modal.Title>Edit Persona</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {editData && (
@@ -370,16 +374,23 @@ export default function Manage() {
                   <Form.Control
                     value={editData.productName}
                     onChange={(e) =>
-                      setEditData({ ...editData, productName: e.target.value })
+                      setEditData({
+                        ...editData,
+                        productName: e.target.value,
+                      })
                     }
                   />
                 </Col>
+
                 <Col>
                   <Form.Label>Category</Form.Label>
                   <Form.Control
                     value={editData.category}
                     onChange={(e) =>
-                      setEditData({ ...editData, category: e.target.value })
+                      setEditData({
+                        ...editData,
+                        category: e.target.value,
+                      })
                     }
                   />
                 </Col>
@@ -392,12 +403,15 @@ export default function Manage() {
                   rows={3}
                   value={editData.summary}
                   onChange={(e) =>
-                    setEditData({ ...editData, summary: e.target.value })
+                    setEditData({
+                      ...editData,
+                      summary: e.target.value,
+                    })
                   }
                 />
               </Form.Group>
 
-              <Form.Group className="mb-3">
+              <Form.Group>
                 <Form.Label>Tone Recommendation</Form.Label>
                 <Form.Control
                   as="textarea"
@@ -414,12 +428,13 @@ export default function Manage() {
             </Form>
           )}
         </Modal.Body>
+
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowEdit(false)}>
-            <i className="bi bi-x-circle me-1"></i> Cancel
+            Cancel
           </Button>
           <Button variant="success" onClick={handleSave}>
-            <i className="bi bi-check-circle me-1"></i> Save Changes
+            Save Changes
           </Button>
         </Modal.Footer>
       </Modal>
@@ -427,21 +442,15 @@ export default function Manage() {
       {/* Delete Modal */}
       <Modal show={showDelete} onHide={() => setShowDelete(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-exclamation-triangle-fill text-danger me-2"></i>
-            Confirm Delete
-          </Modal.Title>
+          <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete this persona?
-          This action cannot be undone.
-        </Modal.Body>
+        <Modal.Body>Are you sure you want to delete this persona?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDelete(false)}>
             Cancel
           </Button>
           <Button variant="danger" onClick={handleDeleteConfirm}>
-            <i className="bi bi-trash3 me-1"></i> Delete
+            Delete
           </Button>
         </Modal.Footer>
       </Modal>
