@@ -6,6 +6,9 @@ import PersonaCard from "../components/PersonaCard";
 import { usePersonaStore } from "../store";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 
+// 👇 Environment-based API URL
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export default function Home() {
   const [form, setForm] = useState({
     productName: "",
@@ -14,6 +17,7 @@ export default function Home() {
     objective: "",
     keywords: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [message, setMessage] = useState("");
@@ -52,10 +56,7 @@ export default function Home() {
           ? form.keywords.split(",").map((k) => k.trim())
           : [],
       };
-      const res = await axios.post(
-        "http://localhost:5050/api/ai/generate",
-        payload
-      );
+      const res = await axios.post(`${API_BASE}/ai/generate`, payload);
       setResult(res.data.data);
     } catch (err) {
       console.error(err);
@@ -90,7 +91,8 @@ export default function Home() {
     <div className="container py-3">
       <Card className="shadow-sm p-4 mb-4 border-0">
         <h4 className="mb-4 fw-bold">
-          <i className="bi bi-stars text-primary me-2"></i>Generate Audience Personas
+          <i className="bi bi-stars text-primary me-2"></i>
+          Generate Audience Personas
         </h4>
 
         <Form onSubmit={handleSubmit}>
@@ -223,6 +225,7 @@ export default function Home() {
             </strong>{" "}
             {result.summary}
           </p>
+
           <p>
             <strong>
               <i className="bi bi-megaphone me-1 text-secondary"></i>
