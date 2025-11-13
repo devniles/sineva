@@ -174,7 +174,6 @@ export default function Manage() {
                 <td>{p.productName}</td>
                 <td>{p.category}</td>
 
-                {/* Responsive Summary */}
                 <td
                   style={{
                     maxWidth: "250px",
@@ -182,7 +181,6 @@ export default function Manage() {
                     wordWrap: "break-word",
                   }}
                 >
-                  {/* Desktop truncate */}
                   <div
                     className="text-truncate d-none d-md-block"
                     title={p.summary}
@@ -190,7 +188,6 @@ export default function Manage() {
                     {p.summary}
                   </div>
 
-                  {/* Mobile full wrap */}
                   <div className="d-block d-md-none">
                     {p.summary}
                   </div>
@@ -234,7 +231,6 @@ export default function Manage() {
         </Table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="d-flex justify-content-center mt-3">
           <Pagination>
@@ -321,7 +317,6 @@ export default function Manage() {
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Modal */}
       <Modal show={showDelete} onHide={() => setShowDelete(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>
