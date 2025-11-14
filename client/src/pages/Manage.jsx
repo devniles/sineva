@@ -20,7 +20,13 @@ export default function Manage() {
     deletePersona,
     updatePersona,
     loading,
+    createMetaAd,
+    createLiveMetaAd,
   } = usePersonaStore();
+
+  const [showCreateAd, setShowCreateAd] = useState(false);
+  const [createAdPayload, setCreateAdPayload] = useState(null);
+  const [createAdLoading, setCreateAdLoading] = useState(false);
 
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -317,6 +323,33 @@ export default function Manage() {
                       Edit
                     </Button>
 
+                   
+
+                    <Button
+                      size="sm"
+                      variant="success"
+                      onClick={() => {
+                        setCreateAdPayload({
+                          persona: p,
+                          creative: {
+                            headline: `For ${p.productName || p.summary || p.name || 'Customers'}`,
+                            body: p.summary || '',
+                          },
+                          audience: {
+                            interests: p.personas?.[0]?.interests || p.interests || [],
+                            ageRange: p.personas?.[0]?.age || p.ageRange || '',
+                            location: p.personas?.[0]?.location || '',
+                          },
+                          link: '',
+                          adsetId: '',
+                          budget: 1000,
+                        });
+                        setShowCreateAd(true);
+                      }}
+                    >
+                      Create Live Ad
+                    </Button>
+
                     <Button
                       size="sm"
                       variant="outline-danger"
@@ -359,6 +392,115 @@ export default function Manage() {
           </Pagination>
         </div>
       )}
+
+      {/* Create Live Ad Modal */}
+      <Modal show={showCreateAd} onHide={() => setShowCreateAd(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Create Live Meta Ad</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {createAdPayload && (
+            <Form>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Label>Headline</Form.Label>
+                  <Form.Control
+                    value={createAdPayload.creative.headline}
+                    onChange={(e) =>
+                      setCreateAdPayload({
+                        ...createAdPayload,
+                        creative: { ...createAdPayload.creative, headline: e.target.value },
+                      })
+                    }
+                  />
+                </Col>
+
+                <Col>
+                  <Form.Label>Link</Form.Label>
+                  <Form.Control
+                    value={createAdPayload.link}
+                    onChange={(e) => setCreateAdPayload({ ...createAdPayload, link: e.target.value })}
+                  />
+                </Col>
+              </Row>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Body</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={createAdPayload.creative.body}
+                  onChange={(e) =>
+                    setCreateAdPayload({
+                      ...createAdPayload,
+                      creative: { ...createAdPayload.creative, body: e.target.value },
+                    })
+                  }
+                />
+              </Form.Group>
+
+              <Row className="mb-3">
+                <Col>
+                  <Form.Label>Adset ID (optional)</Form.Label>
+                  <Form.Control
+                    value={createAdPayload.adsetId}
+                    onChange={(e) => setCreateAdPayload({ ...createAdPayload, adsetId: e.target.value })}
+                    placeholder="Provide existing adset id to create a real ad"
+                  />
+                </Col>
+
+                <Col>
+                  <Form.Label>Budget (optional)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={createAdPayload.budget}
+                    onChange={(e) => setCreateAdPayload({ ...createAdPayload, budget: Number(e.target.value) })}
+                  />
+                </Col>
+              </Row>
+
+              <Form.Group>
+                <Form.Label>Audience interests (comma separated)</Form.Label>
+                <Form.Control
+                  value={(createAdPayload.audience.interests || []).join(',')}
+                  onChange={(e) =>
+                    setCreateAdPayload({
+                      ...createAdPayload,
+                      audience: { ...createAdPayload.audience, interests: e.target.value.split(',').map(s => s.trim()).filter(Boolean) },
+                    })
+                  }
+                />
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCreateAd(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            disabled={createAdLoading}
+            onClick={async () => {
+              try {
+                setCreateAdLoading(true);
+                const resp = await createLiveMetaAd(createAdPayload);
+                // resp may contain helpful message or data
+                setMessage(resp?.message || '✅ Live ad request completed');
+                setTimeout(() => setMessage(''), 4000);
+                setShowCreateAd(false);
+              } catch (err) {
+                setMessage(err.response?.data?.message || '⚠️ Failed to create live ad (see console)');
+                setTimeout(() => setMessage(''), 4000);
+              } finally {
+                setCreateAdLoading(false);
+              }
+            }}
+          >
+            {createAdLoading ? <Spinner size="sm" animation="border" /> : 'Create Live Ad'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Edit Modal */}
       <Modal show={showEdit} onHide={() => setShowEdit(false)} centered size="lg">

@@ -52,4 +52,22 @@ export const usePersonaStore = create((set) => ({
       throw err;
     }
   },
+  createMetaAd: async (persona) => {
+    try {
+      const res = await axios.post(`${API_BASE}/meta/ads`, { persona });
+      return res.data.data;
+    } catch (err) {
+      console.error('Create Meta Ad error:', err);
+      throw err;
+    }
+  },
+  createLiveMetaAd: async (payload) => {
+    try {
+      const res = await axios.post(`${API_BASE}/meta/ads/live`, payload);
+      return res.data;
+    } catch (err) {
+      console.error('Create Live Meta Ad error:', err.response?.data || err.message || err);
+      throw err;
+    }
+  },
 }));

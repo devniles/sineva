@@ -1,7 +1,18 @@
+// src/components/Topbar.jsx
 import React from "react";
 import { Navbar, Container, Nav, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 export default function Topbar() {
+  const navigate = useNavigate();
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   return (
     <Navbar
       bg="white"
@@ -24,7 +35,13 @@ export default function Topbar() {
             <i className="bi bi-gear-fill"></i>
           </Button>
 
-          <Button variant="danger" size="sm" title="Logout">
+          {user && (
+            <div className="d-flex align-items-center gap-2 me-2">
+              <small className="text-muted">Hi, {user.username}</small>
+            </div>
+          )}
+
+          <Button variant="danger" size="sm" title="Logout" onClick={handleLogout}>
             <i className="bi bi-box-arrow-right me-1"></i> Logout
           </Button>
         </Nav>
